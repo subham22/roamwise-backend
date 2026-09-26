@@ -15,4 +15,9 @@ public class ActivityResponse {
     private LocalTime endTime;
     private Integer sequence;
     private String notes;
+    private Double latitude;
+    private Double longitude;
+    private String photoReference;
+    private Boolean isHiddenGem;
+    private String reviewSnippet;
 }

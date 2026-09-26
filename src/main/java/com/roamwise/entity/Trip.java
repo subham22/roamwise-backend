@@ -35,4 +35,12 @@ public class Trip {
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, mappedBy = "trip")
     private List<Day> days;
 
+    private String shareToken;
+
+    private String budgetStayPct;
+    private String budgetFoodPct;
+    private String budgetActivitiesPct;
+    private String budgetTransportPct;
+    private String travelModeSuggestion;
+
 }

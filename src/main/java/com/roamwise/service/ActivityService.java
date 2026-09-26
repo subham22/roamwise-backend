@@ -10,6 +10,11 @@ import com.roamwise.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class ActivityService {
@@ -27,6 +32,35 @@ public class ActivityService {
         activity.setDay(day);
         Activity savedActivity = activityRepository.save(activity);
         return convertToActivityResponse(savedActivity);
+    }
+
+    public void reorderActivities(Integer dayId, List<Integer> orderedActivityIds, Integer currentUserId) {
+        List<Activity> activities = new ArrayList<>();
+
+        for (int i =0; i < orderedActivityIds.size(); i++) {
+            Activity activity = activityRepository.findById(orderedActivityIds.get(i)).orElseThrow(() -> new RuntimeException("Activity Doesn't Exist"));
+            if (!activity.getDay().getTrip().getUser().getId().equals(currentUserId)) {
+                throw new RuntimeException("Activity doesn't belong to this user");
+            }
+
+            activities.add(activity);
+
+        }
+
+        List<LocalTime[]> timeSlots = activities.stream().map(a -> new LocalTime[]{a.getStartTime(), a.getEndTime()})
+                        .sorted(Comparator.comparing(slot -> slot[0]))
+                                .toList();
+
+
+
+        for (int i = 0; i < activities.size(); i++) {
+            Activity activity = activities.get(i);
+            activity.setSequence(i + 1);
+            activity.setStartTime(timeSlots.get(i)[0]);
+            activity.setEndTime(timeSlots.get(i)[1]);
+            activityRepository.save(activity);
+        }
+
     }
 
     public ActivityResponse updateActivity(Integer activityId, CreateActivityRequest request, Integer currentUserId) {

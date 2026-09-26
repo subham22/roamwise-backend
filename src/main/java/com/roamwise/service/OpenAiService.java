@@ -20,23 +20,37 @@ public class OpenAiService {
 
     public String generateItinerary(String prompt) {
 
-        String systemPrompt = """
-
-            You are a travel itinerary planning assistant. You must respond with ONLY valid JSON, no other text, matching this exact structure:
-            
-            {
-              "days": [
-                {
-                  "dayNumber": 1,
-                  "activities": [
-                    { "name": "string", "startTime": "HH:mm", "endTime": "HH:mm", "notes": "string" }
-                  ]
-                }
-              ]
-            }
-            
-            Only suggest activities from the list of real places provided by the user. Do not invent places that are not in that list.
-""";
+        String systemPrompt =
+                """
+                
+                        You are a travel itinerary planning assistant. You must respond with ONLY valid JSON, no other text, matching this exact structure:
+                
+                        {
+                         "accommodations": [
+                            { "hotelName": "string", "checkInDate": "YYYY-MM-DD", "checkOutDate": "YYYY-MM-DD", "pricePerNight": number, "notes": "string" }
+                          ],
+                          "days": [
+                            {
+                              "dayNumber": 1,
+                              "activities": [
+                                { "name": "string", "startTime": "HH:mm", "endTime": "HH:mm", "notes": "string", "sequence": number, "isHiddenGem": boolean, "reviewSnippet": "string - a short real reviewer quote from the provided places data, or empty string if none available" }
+                              ]
+                            }
+                          ],
+                          "budgetBreakdown": {
+                            "stay": "percentage as string, e.g. 40%",
+                            "food": "percentage as string",
+                            "activities": "percentage as string",
+                            "transport": "percentage as string"
+                          },
+                          "travelModeSuggestion": "string - a brief note on the suggested mode of travel (train, bus, flight) from origin to destination, or empty string if not relevant"
+                        }
+                
+                        Assign "sequence" starting at 1 for each activity, in the order they occur within that day.
+                        Set "isHiddenGem" to true for 1-2 activities per trip that are lesser-known local spots, not the most famous tourist attractions. Set it to false for all other activities.
+                        Only suggest activities from the list of real places provided by the user. Do not invent places that are not in that list.
+                        For "reviewSnippet", quote or closely paraphrase a genuine reviewer sentiment from the review snippets provided for that place. If no reviews were provided for that place, leave it as an empty string — do not invent a review.
+                        """;
 
         Map<String, Object> body = Map.of(
                 "model", "gpt-4o-mini",

@@ -1,3 +1,3 @@
 package com.roamwise.dto.ai_response;
 
-public record GeneratedActivity(String name, String startTime, String endTime, String notes) {}
+public record GeneratedActivity(String name, String startTime, String endTime, String notes, Integer sequence, boolean isHiddenGem, String reviewSnippet) {}
