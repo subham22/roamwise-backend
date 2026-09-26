@@ -273,13 +273,18 @@ public class ItineraryGenerationService {
             + formatWeatherForPrompt(trip)
             + "\n"
             + "If a day's weather is rainy or poor, prefer indoor activities for that day.\n\n"
-                + "Include hotels or stay as well depending upon the no of days trip and budget in accommodations, Do not include hotel check-in, check-out, or accommodation details as activities inside \"days\". Put all lodging information only in \"accommodations\".\n\n"
-                + "For accommodations, suggest a category of stay (e.g. \"mid-range boutique hotel\", \"budget guesthouse\", \"luxury resort\") with a realistic price range for that category and destination — do NOT name a specific real hotel brand with an invented exact price.\n\n"
-                + "Provide a rough budget breakdown as percentages (stay, food, activities, transport) that sum to 100%, based on the trip budget and destination.\n\n"
-                + "Include 1-2 'hidden gem' suggestions among the activities — lesser-known places from the list provided, not just the most famous ones.\n\n"
-                + "If relevant, briefly mention a suggested mode of travel (train, bus, flight) for reaching " + trip.getDestination() + " from " + trip.getOrigin() + " as part of the trip notes — this is a general suggestion, not based on real-time schedules or prices.\n\n"
-                + "Here are real places you may use:\n"
-                + placesText;
+            + "Include hotels or stay as well depending upon the no of days trip and budget in accommodations, Do not include hotel check-in, check-out, or accommodation details as activities inside \"days\". Put all lodging information only in \"accommodations\".\n\n"
+            + "For accommodations, suggest a category of stay (e.g. \"mid-range boutique hotel\", \"budget guesthouse\", \"luxury resort\") with a realistic price range for that category and destination — do NOT name a specific real hotel brand with an invented exact price.\n\n"
+            + "Provide a rough budget breakdown as percentages (stay, food, activities, transport) that sum to 100%, based on the trip budget and destination.\n\n"
+            + "Include 1-2 'hidden gem' suggestions among the activities — lesser-known places from the list provided, not just the most famous ones.\n\n"
+            + "If relevant, briefly mention a suggested mode of travel (train, bus, flight) for reaching "
+            + trip.getDestination()
+            + " from "
+            + trip.getOrigin()
+            + " as part of the trip notes — this is a general suggestion, not based on real-time schedules or prices.\n\n"
+            + "For \"name\", always use the exact, specific name of a real place — never a generic description like \"Lunch at a local café\" or an instructional phrase. Every activity must reference an identifiable, named place, ideally one from the provided real-places list."
+            + "Here are real places you may use:\n"
+            + placesText;
 
         GeneratedItinerary rawJson = parseWithRetry(userPrompt, 3);
         parseAndSaveItinerary(rawJson, trip, places);
