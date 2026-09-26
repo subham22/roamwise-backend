@@ -257,36 +257,37 @@ public class ItineraryGenerationService {
 
         long numberOfDays = ChronoUnit.DAYS.between(trip.getStartDate(), trip.getEndDate()) + 1;
 
-        String userPrompt =
-                "Build a "
-                        + numberOfDays
-                        + "-day itinerary for "
-                        + trip.getDestination()
-                        + ".\n"
-                        + "Budget: "
-                        + trip.getBudget()
-                        + "\n"
-                        + "Interests: "
-                        + interests
-                        + "\n\n"
-                        + "Weather forecast for each day:\n"
-                        + formatWeatherForPrompt(trip)
-                        + "\n"
-                        + "If a day's weather is rainy or poor, prefer indoor activities for that day.\n\n"
-                        + "Include hotels or stay as well depending upon the no of days trip and budget in accommodations, Do not include hotel check-in, check-out, or accommodation details as activities inside \"days\". Put all lodging information only in \"accommodations\".\n\n"
-                        + "For accommodations, suggest a category of stay (e.g. \"mid-range boutique hotel\", \"budget guesthouse\", \"luxury resort\") with a realistic price range for that category and destination — do NOT name a specific real hotel brand with an invented exact price.\n\n"
-                        + "Provide a rough budget breakdown as percentages (stay, food, activities, transport) that sum to 100%, based on the trip budget and destination.\n\n"
-                        + "Include 1-2 'hidden gem' suggestions among the activities — lesser-known places from the list provided, not just the most famous ones.\n\n"
-                        + "If relevant, briefly mention a suggested mode of travel (train, bus, flight) for reaching "
-                        + trip.getDestination()
-                        + " from "
-                        + trip.getOrigin()
-                        + " as part of the trip notes — this is a general suggestion, not based on real-time schedules or prices.\n\n"
-                        + "For \"name\", always use the exact, specific name of a real place — never a generic description like \"Lunch at a local café\" or an instructional phrase. Every activity must reference an identifiable, named place, ideally one from the provided real-places list.\n\n"
-                        + "If the destination spans multiple distinct locations (e.g., different islands, cities, or areas within a region), plan realistic inter-location travel and ensure accommodations match each leg of the trip separately.\n\n"
-                        + "If the trip involves visiting multiple distinct locations (e.g., different islands, cities, or regions), you MUST provide a separate accommodation entry for each distinct location, with checkInDate/checkOutDate matching exactly when the traveler is in that location. Do not provide a single accommodation covering multiple different locations if the itinerary moves between them.\n\n"
-                        + "Here are real places you may use:\n"
-                        + placesText;
+    String userPrompt =
+        "Build a "
+            + numberOfDays
+            + "-day itinerary for "
+            + trip.getDestination()
+            + ".\n"
+            + "Budget: "
+            + trip.getBudget()
+            + "\n"
+            + "Interests: "
+            + interests
+            + "\n\n"
+            + "Weather forecast for each day:\n"
+            + formatWeatherForPrompt(trip)
+            + "\n"
+            + "If a day's weather is rainy or poor, prefer indoor activities for that day.\n\n"
+            + "Include hotels or stay as well depending upon the no of days trip and budget in accommodations, Do not include hotel check-in, check-out, or accommodation details as activities inside \"days\". Put all lodging information only in \"accommodations\".\n\n"
+            + "For accommodations, suggest a category of stay (e.g. \"mid-range boutique hotel\", \"budget guesthouse\", \"luxury resort\") with a realistic price range for that category and destination — do NOT name a specific real hotel brand with an invented exact price.\n\n"
+            + "Provide a rough budget breakdown as percentages (stay, food, activities, transport) that sum to 100%, based on the trip budget and destination.\n\n"
+            + "Include 1-2 'hidden gem' suggestions among the activities — lesser-known places from the list provided, not just the most famous ones.\n\n"
+            + "If relevant, briefly mention a suggested mode of travel (train, bus, flight) for reaching "
+            + trip.getDestination()
+            + " from "
+            + trip.getOrigin()
+            + " as part of the trip notes — this is a general suggestion, not based on real-time schedules or prices.\n\n"
+            + "For \"name\", always use the exact, specific name of a real place — never a generic description like \"Lunch at a local café\" or an instructional phrase. Every activity must reference an identifiable, named place, ideally one from the provided real-places list.\n\n"
+            + "If the destination spans multiple distinct locations (e.g., different islands, cities, or areas within a region), plan realistic inter-location travel and ensure accommodations match each leg of the trip separately.\n\n"
+            + "If the trip involves visiting multiple distinct locations (e.g., different islands, cities, or regions), you MUST provide a separate accommodation entry for each distinct location, with checkInDate/checkOutDate matching exactly when the traveler is in that location. Do not provide a single accommodation covering multiple different locations if the itinerary moves between them.\n\n"
+            + "+ \"When the itinerary moves between distinct locations (e.g., different islands or cities), insert the transit itself as a real activity within the day's schedule (e.g., 'Ferry from Havelock Island to Neil Island'), with a realistic time slot — do not just mention travel between locations in passing notes.\\n\\n\""
+            + "Here are real places you may use:\n"
+            + placesText;
 
         GeneratedItinerary rawJson = parseWithRetry(userPrompt, 3);
         parseAndSaveItinerary(rawJson, trip, places);

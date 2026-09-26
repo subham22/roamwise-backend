@@ -56,7 +56,6 @@ public class PlacesService {
         if (response == null || response.places() == null) {
             return List.of();
         }
-        System.out.println(response.places().stream().map(l -> l.location()).toList());
         return response.places().stream()
                 .map(place -> new PlaceResult(
                         place.displayName().text(),
