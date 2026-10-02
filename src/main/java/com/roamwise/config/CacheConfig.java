@@ -18,4 +18,5 @@ public class CacheConfig {
                 .cacheDefaults(RedisCacheConfiguration.defaultCacheConfig().entryTtl(Duration.ofHours(6)))
                 .build();
     }
+
 }
