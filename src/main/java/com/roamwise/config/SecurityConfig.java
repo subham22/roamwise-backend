@@ -30,7 +30,14 @@ public class SecurityConfig {
                         httpSecuritySessionManagementConfigurer -> httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
                 .cors(Customizer.withDefaults())
-                .authorizeHttpRequests(auth -> auth.requestMatchers("/api/auth/**", "/api/places/photo", "/api/trips/shared/**", "/api/shared/trips/**").permitAll().anyRequest().authenticated())
+                .authorizeHttpRequests(auth -> auth.requestMatchers(
+                        "/api/auth/**",
+                        "/api/places/photo",
+                        "/api/trips/shared/**",
+                        "/api/shared/trips/**",
+                        "/api/guides/**",
+                        "/sitemap.xml"
+                ).permitAll().anyRequest().authenticated())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }

@@ -62,7 +62,7 @@ public class ItineraryGenerationService {
 
     }
 
-    private String formatWeatherForPrompt(Trip trip) {
+    public String formatWeatherForPrompt(Trip trip) {
         StringBuilder sb = new StringBuilder();
         LocalDate current = trip.getStartDate();
         while (!current.isAfter(trip.getEndDate())) {
@@ -197,7 +197,7 @@ public class ItineraryGenerationService {
 
     }
 
-    private GeneratedItinerary parseWithRetry(String userPrompt, int maxAttempts) {
+    public GeneratedItinerary parseWithRetry(String userPrompt, int maxAttempts) {
         String currentPrompt = userPrompt;
         Exception lastError = null;
 
@@ -243,7 +243,7 @@ public class ItineraryGenerationService {
     }
 
 
-    private PlaceResult findMatchingPlace(String activityName, List<PlaceResult> places) {
+    PlaceResult findMatchingPlace(String activityName, List<PlaceResult> places) {
         return places.stream()
                 .filter(place -> place.name().toLowerCase().contains(activityName.toLowerCase())
                         || activityName.toLowerCase().contains(place.name().toLowerCase()))
@@ -293,7 +293,7 @@ public class ItineraryGenerationService {
         parseAndSaveItinerary(rawJson, trip, places);
     }
 
-    private String formatPlacesForPrompt(List<PlaceResult> places) {
+    public String formatPlacesForPrompt(List<PlaceResult> places) {
         StringBuilder sb = new StringBuilder();
         for (PlaceResult place : places) {
             sb.append("- ").append(place.name())
