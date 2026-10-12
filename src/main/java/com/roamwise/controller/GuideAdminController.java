@@ -10,6 +10,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
+
 @RestController
 @RequestMapping("/api/admin/guides")
 @RequiredArgsConstructor
@@ -29,6 +31,7 @@ public class GuideAdminController {
     public void publish(@PathVariable Integer id) {
         Guide guide = guideRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Guide not found"));
+        guide.setUpdatedAt(LocalDateTime.now());
         guide.setStatus(Status.PUBLISHED);
         guideRepository.save(guide);
     }

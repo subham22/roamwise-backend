@@ -49,6 +49,6 @@ public class GuideController {
                 .toList();
 
         return new GuideDetailResponse(guide.getSlug(), guide.getTitle(), guide.getDestination(),
-                guide.getMetaDescription(), guide.getHeroImageUrl(), days);
+                guide.getMetaDescription(), guide.getHeroImageUrl(), days, guide.getCreatedAt(), guide.getUpdatedAt());
     }
 }

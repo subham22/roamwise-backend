@@ -1,11 +1,12 @@
 package com.roamwise.dto.guide;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
 public record GuideDetailResponse(String slug, String title, String destination,
                                   String metaDescription, String heroImageUrl,
-                                  List<GuideDayResponse> days) {
+                                  List<GuideDayResponse> days, LocalDateTime createdAt, LocalDateTime updatedAt) {
 
     public record GuideDayResponse(Integer dayNo, String dayLabel, List<GuideActivityResponse> activities) {}
 
