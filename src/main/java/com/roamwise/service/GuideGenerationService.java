@@ -138,7 +138,13 @@ public class GuideGenerationService {
                     + " characters, must be at most 60");
         }
 
-// Meta description
+        if (guide.title().length() < 30) {
+            throw new RuntimeException("title is " + guide.title().length()
+                    + " characters, must be at least 30");
+        }
+
+
+
         if (guide.metaDescription() == null || guide.metaDescription().isBlank()) {
             throw new RuntimeException("metaDescription is missing");
         }
@@ -147,6 +153,8 @@ public class GuideGenerationService {
             throw new RuntimeException("metaDescription is " + descLength
                     + " characters, must be between 100 and 170");
         }
+
+
 
         for (GeneratedDay day : guide.days()) {
             if (day.activities() == null || day.activities().isEmpty()) {
