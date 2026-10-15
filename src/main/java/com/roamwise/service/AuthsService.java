@@ -2,6 +2,7 @@ package com.roamwise.service;
 
 import com.roamwise.dto.SignupRequest;
 import com.roamwise.entity.PasswordResetToken;
+import com.roamwise.entity.Role;
 import com.roamwise.entity.User;
 import com.roamwise.repository.PasswordResetTokenRepository;
 import com.roamwise.repository.UserRepository;
@@ -70,6 +71,7 @@ public class AuthsService {
         User user = new User();
         user.setEmail(request.getEmail());
         user.setPasswordHash(hash);
+        user.setRole(Role.USER);
         userRepository.save(user);
 
     }

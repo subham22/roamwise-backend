@@ -37,7 +37,7 @@ public class SecurityConfig {
                         "/api/shared/trips/**",
                         "/api/guides/**",
                         "/sitemap.xml"
-                ).permitAll().anyRequest().authenticated())
+                ).permitAll().requestMatchers("/api/admin/**").hasRole("ADMIN").anyRequest().authenticated())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
