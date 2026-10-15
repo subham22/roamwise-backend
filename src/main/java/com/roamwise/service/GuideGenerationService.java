@@ -35,7 +35,7 @@ public class GuideGenerationService {
     private  final ItineraryGenerationService itineraryGenerationService;
     private final GuideRepository guideRepository;
 
-    public void generateGuide(String destination, int numberOfDays) throws JsonProcessingException {
+    public Integer generateGuide(String destination, int numberOfDays) throws JsonProcessingException {
        List<PlaceResult> places =  placesService.searchPlaces("top attractions and things to do in " + destination);
         String userPrompt = "Write a %d-day travel guide for %s. For 'name', always use the exact real place name, never a generic description. Include 1-2 hidden-gem activities. Here are real places you may use: %s"
                 .formatted(numberOfDays, destination, itineraryGenerationService.formatPlacesForPrompt(places));
@@ -57,7 +57,7 @@ public class GuideGenerationService {
                                         .findFirst()
                                                 .ifPresent(newGuide::setHeroImageUrl);
 
-       guideRepository.save(newGuide);
+       return guideRepository.save(newGuide).getId();
 
     }
 

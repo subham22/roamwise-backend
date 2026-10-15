@@ -7,6 +7,7 @@ import com.roamwise.repository.guide.GuideRepository;
 import com.roamwise.service.GuideGenerationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -23,8 +24,8 @@ public class GuideAdminController {
     public record GenerateGuideRequest(String destination, Integer numberOfDays) {}
 
     @PostMapping("/generate")
-    public void generate(@RequestBody GenerateGuideRequest request) throws JsonProcessingException {
-        guideGenerationService.generateGuide(request.destination(), request.numberOfDays());
+    public ResponseEntity<Integer> generate(@RequestBody GenerateGuideRequest request) throws JsonProcessingException {
+        return ResponseEntity.ok().body(guideGenerationService.generateGuide(request.destination(), request.numberOfDays()));
     }
 
     @PostMapping("/{id}/publish")
