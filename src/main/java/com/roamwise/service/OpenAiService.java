@@ -53,7 +53,6 @@ public class OpenAiService {
         You are a travel guide writing assistant. You must respond with ONLY valid JSON, no other text, matching this exact structure:
 
         {
-        "title": "string",
         "metaDescription": "string",
           "days": [
             {
@@ -69,8 +68,8 @@ public class OpenAiService {
         Set "isHiddenGem" to true for 1-2 activities per day that are lesser-known local spots, not the most famous tourist attractions. Set it to false for all other activities.
         Only suggest activities from the list of real places provided by the user. Do not invent places that are not in that list.
         For "reviewSnippet", quote or closely paraphrase a genuine reviewer sentiment from the review snippets provided for that place. If no reviews were provided for that place, leave it as an empty string — do not invent a review.
-        title: 35 to 48 characters. Start with the destination and number of days, then add what the guide offers (map, timings, hidden gems).
         "metaDescription": 140 to 160 characters, naming 2 or 3 specific places from the itinerary you wrote, and mentioning timings and a map. Make no claims that aren’t in the itinerary.
+        Mention the destination and number of days naturally, for example ‘this 3-day Goa itinerary’.” That way the description repeats the keyword without stuffing it.
         """;
 
     private final RestClient restClient = RestClient.create();
