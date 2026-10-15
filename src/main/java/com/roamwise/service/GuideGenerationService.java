@@ -21,6 +21,7 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,8 +49,8 @@ public class GuideGenerationService {
        newGuide.setTitle("Trip to " + destination + " for " + numberOfDays + " days");
        newGuide.setMetaDescription("Trip to " + destination + " for " + numberOfDays + " days");
         newGuide.setSlug(slug);
-        newGuide.setCreatedAt(LocalDateTime.now());
-        newGuide.setUpdatedAt(LocalDateTime.now());
+        newGuide.setCreatedAt(LocalDateTime.now().atOffset(ZoneOffset.UTC ).toLocalDateTime());
+        newGuide.setUpdatedAt(LocalDateTime.now().atOffset(ZoneOffset.UTC ).toLocalDateTime());
         newGuide.getDays().stream().flatMap(d -> d.getActivities().stream())
                         .map(GuideActivity::getPhotoReference)
                                 .filter(ref -> ref != null)
