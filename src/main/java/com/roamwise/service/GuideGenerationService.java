@@ -46,8 +46,8 @@ public class GuideGenerationService {
         newGuide.setDestination(destination);
        newGuide.setDays(convertToGeneratedDay(guide, newGuide, places));
        newGuide.setStatus(Status.DRAFT);
-       newGuide.setTitle("Trip to " + destination + " for " + numberOfDays + " days");
-       newGuide.setMetaDescription("Trip to " + destination + " for " + numberOfDays + " days");
+       newGuide.setTitle(guide.title());
+       newGuide.setMetaDescription(guide.metaDescription());
         newGuide.setSlug(slug);
         newGuide.setCreatedAt(LocalDateTime.now().atOffset(ZoneOffset.UTC ).toLocalDateTime());
         newGuide.setUpdatedAt(LocalDateTime.now().atOffset(ZoneOffset.UTC ).toLocalDateTime());
@@ -127,6 +127,25 @@ public class GuideGenerationService {
     private void validateItinerary(GeneratedGuide guide) {
         if (guide.days() == null || guide.days().isEmpty()) {
             throw new RuntimeException("No days generated");
+        }
+
+        // Title
+        if (guide.title() == null || guide.title().isBlank()) {
+            throw new RuntimeException("title is missing");
+        }
+        if (guide.title().length() > 60) {
+            throw new RuntimeException("title is " + guide.title().length()
+                    + " characters, must be at most 60");
+        }
+
+// Meta description
+        if (guide.metaDescription() == null || guide.metaDescription().isBlank()) {
+            throw new RuntimeException("metaDescription is missing");
+        }
+        int descLength = guide.metaDescription().length();
+        if (descLength < 100 || descLength > 170) {
+            throw new RuntimeException("metaDescription is " + descLength
+                    + " characters, must be between 100 and 170");
         }
 
         for (GeneratedDay day : guide.days()) {
