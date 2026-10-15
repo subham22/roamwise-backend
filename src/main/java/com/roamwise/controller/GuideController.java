@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.ZoneOffset;
 import java.util.Comparator;
 import java.util.List;
 
@@ -49,6 +50,6 @@ public class GuideController {
                 .toList();
 
         return new GuideDetailResponse(guide.getSlug(), guide.getTitle(), guide.getDestination(),
-                guide.getMetaDescription(), guide.getHeroImageUrl(), days, guide.getCreatedAt(), guide.getUpdatedAt());
+                guide.getMetaDescription(), guide.getHeroImageUrl(), days, guide.getCreatedAt().atOffset(ZoneOffset.UTC), guide.getUpdatedAt().atOffset(ZoneOffset.UTC));
     }
 }
