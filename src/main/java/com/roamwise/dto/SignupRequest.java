@@ -17,4 +17,6 @@ public class SignupRequest {
     @NotBlank(message = "Password can't be blank")
     @Size(min = 8)
     private String password;
+
+    private  String captchaToken;
 }

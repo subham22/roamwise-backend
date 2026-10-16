@@ -1,5 +1,6 @@
 package com.roamwise.service;
 
+import com.roamwise.dto.ForgotPasswordRequest;
 import com.roamwise.dto.SignupRequest;
 import com.roamwise.entity.PasswordResetToken;
 import com.roamwise.entity.Role;
@@ -31,11 +32,15 @@ public class AuthsService {
     private final PasswordResetTokenRepository passwordResetTokenRepository;
     private final JwtUtil jwts;
     private final EmailService emailService;
+    private final TurnstileService turnstileService;
 
-    public void forgotPassword(String email) {
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User is Not Registered"));
+    public void forgotPassword(ForgotPasswordRequest request) {
+
+        turnstileService.verify(request.getCaptchaToken());
+        User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new RuntimeException("User is Not Registered"));
 
         PasswordResetToken token = new PasswordResetToken();
+
         token.setUser(user);
         token.setToken(UUID.randomUUID().toString());
         token.setExpiresAt(LocalDateTime.now().plusHours(1));
@@ -62,6 +67,7 @@ public class AuthsService {
     }
 
     public void signup(SignupRequest request) {
+        turnstileService.verify(request.getCaptchaToken());
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("User already Exists");
         }
