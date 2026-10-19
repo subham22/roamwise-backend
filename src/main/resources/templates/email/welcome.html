@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <title>Welcome to Roamwise</title>
+</head>
+<body style="margin:0;padding:0;background:#fff8f0;">
+<!-- Preheader: the grey preview line shown in the inbox list -->
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;">
+    Your account is ready. Plan your first India trip in minutes.
+</div>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fff8f0;">
+    <tr>
+        <td align="center" style="padding:32px 16px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                   style="max-width:560px;background:#ffffff;border:1px solid #f0e6da;border-radius:20px;
+                      font-family:Arial,Helvetica,sans-serif;color:#143226;">
+
+                <!-- Header -->
+                <tr>
+                    <td style="padding:28px 32px 8px;">
+                        <a href="https://roamwise.live" style="text-decoration:none;color:#143226;">
+                            <img src="https://roamwise.live/logo.png" width="36" height="36" alt=""
+                                 style="vertical-align:middle;border:0;border-radius:10px;">
+                            <span style="font-size:20px;font-weight:800;vertical-align:middle;margin-left:8px;">Roamwise</span>
+                        </a>
+                    </td>
+                </tr>
+
+                <!-- Body -->
+                <tr>
+                    <td style="padding:16px 32px 8px;">
+                        <p style="margin:0 0 8px;font-size:12px;font-weight:800;letter-spacing:1.5px;
+                        text-transform:uppercase;color:#c23a2b;">
+                            Welcome aboard
+                        </p>
+                        <h1 style="margin:0 0 12px;font-size:26px;line-height:1.25;font-weight:800;color:#143226;">
+                            Welcome! Your trips just got easier
+                        </h1>
+                        <p style="margin:0 0 24px;font-size:16px;line-height:1.6;color:#4a4f5a;">
+                            Thanks for joining Roamwise. Tell us where you're going and for how long,
+                            and we'll build a day-by-day plan from real places, live weather and travel times.
+                            Then make it yours: drag, edit and share.
+                        </p>
+
+                        <!-- Button -->
+                        <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                                <td style="border-radius:12px;background:#c23a2b;">
+                                    <a th:href="${plannerUrl}" href="https://roamwise.live/app/generate"
+                                       style="display:inline-block;padding:14px 26px;font-size:16px;font-weight:700;
+                              color:#ffffff;text-decoration:none;border-radius:12px;">
+                                        Plan my first trip
+                                    </a>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <!-- Three quick tips -->
+                <tr>
+                    <td style="padding:24px 32px 8px;">
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                                <td style="padding:0 0 14px;font-size:15px;line-height:1.6;color:#4a4f5a;">
+                                    <strong style="color:#143226;">1. Start with the basics.</strong>
+                                    A destination and number of days is enough. Add interests and budget for a sharper plan.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding:0 0 14px;font-size:15px;line-height:1.6;color:#4a4f5a;">
+                                    <strong style="color:#143226;">2. Edit freely.</strong>
+                                    Reorder stops, swap activities and check the map. Nothing is fixed.
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="padding:0;font-size:15px;line-height:1.6;color:#4a4f5a;">
+                                    <strong style="color:#143226;">3. Share with your group.</strong>
+                                    Send a read-only link on WhatsApp so everyone sees the same plan.
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <!-- Guides -->
+                <tr>
+                    <td style="padding:16px 32px 8px;">
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                               style="background:#fff8f0;border-radius:14px;">
+                            <tr>
+                                <td style="padding:18px 20px;font-size:14px;line-height:1.6;color:#4a4f5a;">
+                                    <strong style="color:#143226;">Need ideas first?</strong><br>
+                                    Browse ready-made itineraries for Goa, Jaipur, Udaipur and 100+ more places.
+                                    <a th:href="${guidesUrl}" href="https://roamwise.live/guides"
+                                       style="color:#c23a2b;font-weight:700;">Explore guides</a>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <!-- Footer -->
+                <tr>
+                    <td style="padding:24px 32px 28px;">
+                        <p style="margin:0;padding-top:20px;border-top:1px solid #f0e6da;font-size:12px;line-height:1.6;color:#676c78;">
+                            You're receiving this because you created a Roamwise account with this email address.
+                            If that wasn't you, you can ignore this email.<br><br>
+                            Roamwise · Trips that actually work ·
+                            <a href="https://roamwise.live" style="color:#676c78;">roamwise.live</a>
+                        </p>
+                    </td>
+                </tr>
+
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>

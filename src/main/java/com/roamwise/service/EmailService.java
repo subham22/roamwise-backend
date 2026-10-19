@@ -38,6 +38,18 @@ public class EmailService {
     }
 
     @Async
+    public void sendWelcomeEmail(String toEmail) throws MessagingException {
+        send(toEmail,
+                "Welcome to Roamwise",
+                "email/welcome",
+                Map.of("plannerUrl", "https://roamwise.live/app/generate",
+                        "guidesUrl", "https://roamwise.live/guides"),
+                "Welcome to Roamwise!\n\n"
+                        + "Plan your first trip: https://roamwise.live/app/generate\n"
+                        + "Browse ready-made itineraries: https://roamwise.live/guides");
+    }
+
+    @Async
     public void sendPasswordResetEmail(String toEmail, String resetLink) throws MessagingException {
         send(toEmail,
                 "Reset your Roamwise password",

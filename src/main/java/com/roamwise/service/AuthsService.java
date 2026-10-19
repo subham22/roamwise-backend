@@ -67,7 +67,7 @@ public class AuthsService {
         passwordResetTokenRepository.save(resetToken);
     }
 
-    public void signup(SignupRequest request) {
+    public void signup(SignupRequest request) throws MessagingException {
         turnstileService.verify(request.getCaptchaToken());
         if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new RuntimeException("User already Exists");
@@ -80,6 +80,7 @@ public class AuthsService {
         user.setPasswordHash(hash);
         user.setRole(Role.USER);
         userRepository.save(user);
+        emailService.sendWelcomeEmail(user.getEmail());
 
     }
 

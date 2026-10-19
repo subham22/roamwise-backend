@@ -45,7 +45,7 @@ public class AuthController {
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<Map<String, String>> signup(@Valid @RequestBody SignupRequest request) {
+    public ResponseEntity<Map<String, String>> signup(@Valid @RequestBody SignupRequest request) throws MessagingException {
         authService.signup(request);
         Map<String, String> response = new HashMap<>();
         response.put("message", "User Created!!");
