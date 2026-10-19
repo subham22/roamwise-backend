@@ -10,6 +10,7 @@ import com.roamwise.repository.UserRepository;
 import com.roamwise.service.DirectionsService;
 import com.roamwise.service.PlacesService;
 import com.roamwise.service.WeatherService;
+import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import com.roamwise.service.AuthsService;
@@ -32,7 +33,7 @@ public class AuthController {
 
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<Void> forgotPassword(@RequestBody ForgotPasswordRequest request) {
+    public ResponseEntity<Void> forgotPassword(@RequestBody ForgotPasswordRequest request) throws MessagingException {
         authService.forgotPassword(request);
         return ResponseEntity.ok().build();
     }

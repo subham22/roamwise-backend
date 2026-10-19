@@ -6,6 +6,7 @@ import com.roamwise.dto.ai_response.GeneratedItinerary;
 import com.roamwise.entity.*;
 import com.roamwise.repository.*;
 import com.roamwise.service.*;
+import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -109,7 +110,7 @@ public class TripController {
     }
 
     @PostMapping("/{tripId}/share")
-    public ResponseEntity<Map<String, String>> shareTrip(@PathVariable Integer tripId, @RequestBody ShareRequest request, @AuthenticationPrincipal User currentUser) {
+    public ResponseEntity<Map<String, String>> shareTrip(@PathVariable Integer tripId, @RequestBody ShareRequest request, @AuthenticationPrincipal User currentUser) throws MessagingException {
         String shareUrl = tripService.generateShareLink(tripId, currentUser.getId());
         if (request.getRecipientEmail() != null) {
             TripResponse trip = tripService.getTripById(tripId, currentUser.getId());

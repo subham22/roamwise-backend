@@ -9,6 +9,7 @@ import com.roamwise.repository.PasswordResetTokenRepository;
 import com.roamwise.repository.UserRepository;
 import com.roamwise.utills.JwtUtil;
 import io.jsonwebtoken.Jwts;
+import jakarta.mail.MessagingException;
 import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -34,7 +35,7 @@ public class AuthsService {
     private final EmailService emailService;
     private final TurnstileService turnstileService;
 
-    public void forgotPassword(ForgotPasswordRequest request) {
+    public void forgotPassword(ForgotPasswordRequest request) throws MessagingException {
 
         turnstileService.verify(request.getCaptchaToken());
         User user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new RuntimeException("User is Not Registered"));

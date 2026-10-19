@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <title th:text="'A trip to ' + ${tripDestination} + ' was shared with you'">A trip was shared with you</title>
+</head>
+<body style="margin:0;padding:0;background:#fff8f0;">
+<!-- Preheader: the grey preview line shown in the inbox list -->
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;"
+     th:text="'Day-by-day plan for ' + ${tripDestination} + ', with places, timings and a map.'">
+    A day-by-day trip plan was shared with you.
+</div>
+
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#fff8f0;">
+    <tr>
+        <td align="center" style="padding:32px 16px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                   style="max-width:560px;background:#ffffff;border:1px solid #f0e6da;border-radius:20px;
+                      font-family:Arial,Helvetica,sans-serif;color:#143226;">
+
+                <!-- Header -->
+                <tr>
+                    <td style="padding:28px 32px 8px;">
+                        <a href="https://roamwise.live" style="text-decoration:none;color:#143226;">
+                            <img src="https://roamwise.live/logo.png" width="36" height="36" alt=""
+                                 style="vertical-align:middle;border:0;border-radius:10px;">
+                            <span style="font-size:20px;font-weight:800;vertical-align:middle;margin-left:8px;">Roamwise</span>
+                        </a>
+                    </td>
+                </tr>
+
+                <!-- Body -->
+                <tr>
+                    <td style="padding:16px 32px 8px;">
+                        <p style="margin:0 0 8px;font-size:12px;font-weight:800;letter-spacing:1.5px;
+                        text-transform:uppercase;color:#c23a2b;">
+                            Trip shared with you
+                        </p>
+                        <h1 style="margin:0 0 12px;font-size:26px;line-height:1.25;font-weight:800;color:#143226;">
+                            Your trip to <span th:text="${tripDestination}">your destination</span>
+                        </h1>
+                        <p style="margin:0 0 24px;font-size:16px;line-height:1.6;color:#4a4f5a;">
+                            Someone planned this trip on Roamwise and wants you to see it: a day-by-day itinerary
+                            with real places, timings and a map.
+                        </p>
+
+                        <!-- Button -->
+                        <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                                <td style="border-radius:12px;background:#c23a2b;">
+                                    <a th:href="${shareUrl}" href="#"
+                                       style="display:inline-block;padding:14px 26px;font-size:16px;font-weight:700;
+                              color:#ffffff;text-decoration:none;border-radius:12px;">
+                                        View the trip
+                                    </a>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <p style="margin:24px 0 0;font-size:13px;line-height:1.6;color:#676c78;">
+                            Button not working? Copy and paste this link into your browser:<br>
+                            <a th:href="${shareUrl}" th:text="${shareUrl}" href="#"
+                               style="color:#c23a2b;word-break:break-all;">trip link</a>
+                        </p>
+                    </td>
+                </tr>
+
+                <!-- Plan your own -->
+                <tr>
+                    <td style="padding:16px 32px 8px;">
+                        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0"
+                               style="background:#fff8f0;border-radius:14px;">
+                            <tr>
+                                <td style="padding:18px 20px;font-size:14px;line-height:1.6;color:#4a4f5a;">
+                                    <strong style="color:#143226;">Planning a trip of your own?</strong><br>
+                                    Roamwise builds an editable India itinerary in minutes.
+                                    <a href="https://roamwise.live" style="color:#c23a2b;font-weight:700;">Try it free</a>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+
+                <!-- Footer -->
+                <tr>
+                    <td style="padding:24px 32px 28px;">
+                        <p style="margin:0;padding-top:20px;border-top:1px solid #f0e6da;font-size:12px;line-height:1.6;color:#676c78;">
+                            You received this because someone shared a Roamwise trip with this email address.<br><br>
+                            Roamwise · Trips that actually work ·
+                            <a href="https://roamwise.live" style="color:#676c78;">roamwise.live</a>
+                        </p>
+                    </td>
+                </tr>
+
+            </table>
+        </td>
+    </tr>
+</table>
+</body>
+</html>
