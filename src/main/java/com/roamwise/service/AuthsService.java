@@ -13,8 +13,10 @@ import jakarta.mail.MessagingException;
 import jakarta.validation.constraints.Email;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.Date;
@@ -86,10 +88,12 @@ public class AuthsService {
 
     public String login(String email, String password) {
 
-        User user = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User is not registered"));
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password"));
+
         Boolean isPasswordMatched = passwordEncoder.matches(password, user.getPasswordHash());
         if (!isPasswordMatched) {
-            throw new RuntimeException("Password is Incorrect");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password");
         }
         return jwts.generateToken(email);
     }
