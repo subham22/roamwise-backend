@@ -4,18 +4,28 @@ import com.roamwise.dto.*;
 import com.roamwise.dto.accomodation.AccommodationResponse;
 import com.roamwise.dto.ai_response.GeneratedItinerary;
 import com.roamwise.entity.*;
+import com.roamwise.entity.guide.Guide;
+import com.roamwise.entity.guide.GuideDay;
+import com.roamwise.entity.guide.Status;
 import com.roamwise.repository.*;
+import com.roamwise.repository.guide.GuideRepository;
 import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -33,6 +43,7 @@ public class TripService {
     private final AccommodationRepository accommodationRepository;
     private final ReplanProposalRepository replanProposalRepository;
     private final ObjectMapper objectMapper;
+    private final GuideRepository guideRepository;
 
     public TripResponse createAITrip(GenerateItineraryRequest request, Integer userId) {
 
@@ -231,5 +242,58 @@ public class TripService {
         }
 
         return frontendUrl + "/shared/trips/" + trip.getShareToken();
+    }
+
+    /** Copies a published guide into the user's own editable trip. Returns the new trip id. */
+    @Transactional
+    public Integer createTripFromGuide(String slug, @Nullable LocalDate startDate, Integer userId) {
+        Guide guide = guideRepository.findBySlug(slug)
+                .filter(g -> g.getStatus() == Status.PUBLISHED)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Guide not found"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
+        LocalDate start = startDate != null ? startDate : LocalDate.now().plusDays(14);
+        if (start.isBefore(LocalDate.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Start date can't be in the past");
+        }
+
+        List<GuideDay> guideDays = guide.getDays().stream()
+                .sorted(Comparator.comparing(GuideDay::getDayNo))
+                .toList();
+
+        Trip trip = new Trip();
+        trip.setUser(user);
+        trip.setDestination(guide.getDestination());
+        // origin is required on trips; guides don't always carry one
+        trip.setOrigin(guide.getOrigin() != null ? guide.getOrigin() : guide.getDestination());
+        trip.setStartDate(start);
+        trip.setEndDate(start.plusDays(Math.max(guideDays.size() - 1, 0)));
+
+        List<Day> days = new ArrayList<>();
+        for (int i = 0; i < guideDays.size(); i++) {
+            GuideDay guideDay = guideDays.get(i);
+            Day day = new Day();
+            day.setTrip(trip);
+            day.setDayNumber(i + 1);
+            day.setDayDate(start.plusDays(i));
+            day.setActivities(guideDay.getActivities().stream().map(ga -> {
+                Activity activity = new Activity();
+                activity.setDay(day);
+                activity.setName(ga.getName());
+                activity.setSequence(ga.getSequence());
+                activity.setStartTime(ga.getStartTime());
+                activity.setEndTime(ga.getEndTime());
+                activity.setNotes(ga.getNotes());
+                activity.setLatitude(ga.getLatitude());
+                activity.setLongitude(ga.getLongitude());
+                activity.setPhotoReference(ga.getPhotoReference());
+                activity.setIsHiddenGem(ga.getIsHiddenGem());
+                activity.setReviewSnippet(ga.getReviewSnippet());
+                return activity;
+            }).collect(Collectors.toCollection(ArrayList::new)));
+            days.add(day);
+        }
+        trip.setDays(days);
+        return tripRepository.save(trip).getTripId();
     }
 }
