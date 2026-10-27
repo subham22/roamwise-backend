@@ -43,6 +43,20 @@ public class EmailService {
     }
 
     @Async
+    public void sendTripInvite(String toEmail, String tripDestination, String tripUrl, String inviterEmail, boolean canEdit)
+            throws MessagingException {
+        String access = canEdit ? "plan it together" : "see the plan";
+        send(toEmail,
+                inviterEmail + " invited you to a trip to " + tripDestination,
+                "email/trip-shared",
+                Map.of("tripDestination", tripDestination, "shareUrl", tripUrl),
+                inviterEmail + " invited you to " + access + " for their trip to " + tripDestination + " on Roamwise.\n\n"
+                        + "Open it here: " + tripUrl + "\n\n"
+                        + "New to Roamwise? Sign up with this email address (" + toEmail + ") and the trip will be waiting in your dashboard.",
+                true);
+    }
+
+    @Async
     public void sendWelcomeEmail(String toEmail) throws MessagingException {
         send(toEmail,
                 "Welcome to Roamwise",

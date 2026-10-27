@@ -7,6 +7,7 @@ import com.roamwise.entity.Day;
 import com.roamwise.repository.ActivityRepository;
 import com.roamwise.repository.DayRepository;
 import com.roamwise.repository.UserRepository;
+import com.roamwise.entity.TripRole;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -22,12 +23,11 @@ public class ActivityService {
     private final UserRepository userRepository;
     private final DayRepository dayRepository;
     private final ActivityRepository activityRepository;
+    private final TripAccessService tripAccess;
 
     public ActivityResponse createActivity(Integer dayId, CreateActivityRequest request, Integer cuurentUserId) {
         Day day = dayRepository.findById(dayId).orElseThrow(() -> new RuntimeException("Day not found, Activity can't be added"));
-        if (!day.getTrip().getUser().getId().equals(cuurentUserId)) {
-            throw new RuntimeException("Day for this trip doesn't belong to current user");
-        }
+        tripAccess.require(day.getTrip(), cuurentUserId, TripRole.EDITOR);
         Activity activity = this.createActivityEntity(request);
         activity.setDay(day);
         Activity savedActivity = activityRepository.save(activity);
@@ -39,9 +39,7 @@ public class ActivityService {
 
         for (int i =0; i < orderedActivityIds.size(); i++) {
             Activity activity = activityRepository.findById(orderedActivityIds.get(i)).orElseThrow(() -> new RuntimeException("Activity Doesn't Exist"));
-            if (!activity.getDay().getTrip().getUser().getId().equals(currentUserId)) {
-                throw new RuntimeException("Activity doesn't belong to this user");
-            }
+            tripAccess.require(activity.getDay().getTrip(), currentUserId, TripRole.EDITOR);
 
             activities.add(activity);
 
@@ -67,9 +65,7 @@ public class ActivityService {
         Activity activity = activityRepository.findById(activityId)
                 .orElseThrow(() -> new RuntimeException("No Activity Found"));
 
-        if (!activity.getDay().getTrip().getUser().getId().equals(currentUserId)) {
-            throw new RuntimeException("Activity doesn't belong to this user");
-        }
+        tripAccess.require(activity.getDay().getTrip(), currentUserId, TripRole.EDITOR);
 
         activity.setName(request.getName());
         activity.setSequence(request.getSequence());
@@ -85,9 +81,7 @@ public class ActivityService {
         Activity activity = activityRepository.findById(activityId)
                 .orElseThrow(() -> new RuntimeException("No Activity Found"));
 
-        if (!activity.getDay().getTrip().getUser().getId().equals(currentUserId)) {
-            throw new RuntimeException("Activity doesn't belong to this user");
-        }
+        tripAccess.require(activity.getDay().getTrip(), currentUserId, TripRole.EDITOR);
 
         activityRepository.delete(activity);
     }
