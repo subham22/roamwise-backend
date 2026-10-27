@@ -44,3 +44,8 @@ jobs:
             docker compose pull backend
             docker compose up -d
             docker image prune -f
+            # nightly DB backup at 03:00 IST (21:30 UTC); install once, then take one now
+            mkdir -p ~/backups
+            crontab -l 2>/dev/null | grep -q roamwise-infra/backup.sh || \
+              (crontab -l 2>/dev/null; echo '30 21 * * * $HOME/roamwise-infra/backup.sh >> $HOME/backups/backup.log 2>&1') | crontab -
+            ./backup.sh >> ~/backups/backup.log 2>&1 && tail -1 ~/backups/backup.log
