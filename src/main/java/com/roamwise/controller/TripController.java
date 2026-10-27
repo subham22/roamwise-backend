@@ -9,6 +9,7 @@ import com.roamwise.service.*;
 import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -21,6 +22,7 @@ import tools.jackson.core.type.TypeReference;
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -125,6 +127,15 @@ public class TripController {
         TripResponse tripResponse = tripService.createTrip(request, currentUser.getId());
         return ResponseEntity.status(HttpStatus.CREATED).body(tripResponse);
 
+    }
+
+    @PostMapping("/from-guide/{slug}")
+    public ResponseEntity<Integer> createTripFromGuide(
+            @PathVariable String slug,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @AuthenticationPrincipal User currentUser) {
+        Integer tripId = tripService.createTripFromGuide(slug, startDate, currentUser.getId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(tripId);
     }
 
     @PostMapping("/generate")
