@@ -138,6 +138,16 @@ public class TripController {
         return ResponseEntity.status(HttpStatus.CREATED).body(tripId);
     }
 
+    // not under /shared/** — that path is public, and copying needs a logged-in user
+    @PostMapping("/copy-shared/{shareToken}")
+    public ResponseEntity<Integer> copySharedTrip(
+            @PathVariable String shareToken,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @AuthenticationPrincipal User currentUser) {
+        Integer tripId = tripService.copySharedTrip(shareToken, startDate, currentUser.getId());
+        return ResponseEntity.status(HttpStatus.CREATED).body(tripId);
+    }
+
     @PostMapping("/generate")
     public  ResponseEntity<Integer> createAITrip(@Valid @RequestBody GenerateItineraryRequest request) {
         User currentUser = (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();

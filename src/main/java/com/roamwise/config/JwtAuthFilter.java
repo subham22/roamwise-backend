@@ -33,10 +33,15 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
-            String email = jwtUtil.extractEmail(token);
-            User user  = userRepository.findByEmail(email).orElseThrow(() -> new RuntimeException("User Not Found"));
-            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(user, null, List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole())));
-            SecurityContextHolder.getContext().setAuthentication(authToken);
+            try {
+                String email = jwtUtil.extractEmail(token);
+                userRepository.findByEmail(email).ifPresent(user -> {
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(user, null, List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole())));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                });
+            } catch (RuntimeException e) {
+                // expired or tampered token: stay anonymous; protected endpoints then answer 401
+            }
 
         }
 
