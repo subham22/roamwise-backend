@@ -1,20 +1,46 @@
-name: Deploy To EC2
+name: Deploy backend
 on:
   push:
     branches: [main]
+
+permissions:
+  contents: read
+  packages: write
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+
+      # Build here, not on the server: the free Oracle micro VM has only 1 GB RAM
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          # shortcut: amd64 only (Oracle micro VMs); add linux/arm64 if moving to an A1 VM
+          platforms: linux/amd64
+          tags: ghcr.io/subham22/roamwise-backend:latest
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          GHCR_USER: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
+          envs: GHCR_USER,GHCR_TOKEN
           script: |
-            cd roamwise-backend && git pull && cd ..
-            cd roamwise-infra
-            docker compose build backend
+            echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+            cd roamwise-infra && git checkout -q main && git pull -q
+            docker compose pull backend
             docker compose up -d
+            docker image prune -f
