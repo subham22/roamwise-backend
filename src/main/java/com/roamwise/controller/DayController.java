@@ -10,6 +10,8 @@ import com.roamwise.repository.DayRepository;
 import com.roamwise.service.DayService;
 import com.roamwise.service.FeasibilityService;
 import jakarta.validation.Valid;
+import com.roamwise.entity.TripRole;
+import com.roamwise.service.TripAccessService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -26,6 +28,7 @@ public class DayController {
     private  final DayService dayService;
     private final FeasibilityService feasibilityService;
     private final DayRepository dayRepository;
+    private final TripAccessService tripAccess;
 
     @PostMapping("trips/{tripId}/days")
     public ResponseEntity<DayResponse> createDay(@PathVariable Integer tripId, @Valid @RequestBody CreateDayRequest request, @AuthenticationPrincipal User currentUser) {
@@ -48,9 +51,7 @@ public class DayController {
         Day day = dayRepository.findById(dayId)
                 .orElseThrow(() -> new RuntimeException("Day not found"));
 
-        if (!day.getTrip().getUser().getId().equals(currentUser.getId())) {
-            throw new RuntimeException("Day doesn't belong to current user");
-        }
+        tripAccess.require(day.getTrip(), currentUser.getId(), TripRole.VIEWER);
 
         List<FeasibilityIssue> issues = feasibilityService.checkDayFeasibility(day);
         return ResponseEntity.ok(issues);

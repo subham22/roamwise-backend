@@ -45,6 +45,8 @@ public class TripService {
     private final ReplanProposalRepository replanProposalRepository;
     private final ObjectMapper objectMapper;
     private final GuideRepository guideRepository;
+    private final TripAccessService tripAccess;
+    private final TripMemberRepository tripMemberRepository;
 
     public TripResponse createAITrip(GenerateItineraryRequest request, Integer userId) {
 
@@ -114,12 +116,13 @@ public class TripService {
     }
 
     public TripResponse getTripById(Integer tripId, Integer currentUserId) {
-        Trip trip = tripRepository.findById(tripId).orElseThrow(() -> new RuntimeException("Trip Doesn't Exist"));
-        if (!trip.getUser().getId().equals(currentUserId)) {
-            throw new RuntimeException("Trip doesn't belong to current user");
-        }
+        Trip trip = tripRepository.findById(tripId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Trip not found"));
+        TripRole role = tripAccess.require(trip, currentUserId, TripRole.VIEWER);
 
         TripResponse tripResponse = convertToTripResponse(trip);
+        tripResponse.setMyRole(role.name());
+        tripResponse.setMemberCount((int) tripMemberRepository.countByTrip(trip));
         List<Day> days = dayRepository.findByTrip(trip); // direct query, bypasses the stale in-memory collection
         List<DayResponse> dayResponses = days.stream().map(this::convertToDayResponse).toList();
         List<Accommodation> accommodations = accommodationRepository.findByTrip(trip);
@@ -136,9 +139,7 @@ public class TripService {
         ReplanProposal proposal = replanProposalRepository.findById(proposalId)
                 .orElseThrow(() -> new RuntimeException("Proposal not found"));
 
-        if (!proposal.getTrip().getUser().getId().equals(userId)) {
-            throw new RuntimeException("Not your proposal");
-        }
+        tripAccess.require(proposal.getTrip(), userId, TripRole.EDITOR);
 
         Trip trip = proposal.getTrip();
 
@@ -233,9 +234,7 @@ public class TripService {
         Trip trip = tripRepository.findById(tripId)
                 .orElseThrow(() -> new RuntimeException("Trip doesn't exist"));
 
-        if (!trip.getUser().getId().equals(currentUserId)) {
-            throw new RuntimeException("Trip doesn't belong to current user");
-        }
+        tripAccess.require(trip, currentUserId, TripRole.OWNER); // public links are the owner's call
 
         if (trip.getShareToken() == null) {
             trip.setShareToken(UUID.randomUUID().toString());

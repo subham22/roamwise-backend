@@ -24,5 +24,7 @@ public class TripResponse {
     private String budgetFoodPct;
     private String budgetActivitiesPct;
     private String budgetTransportPct;
+    private String myRole;      // OWNER, EDITOR or VIEWER (only on single-trip responses)
+    private Integer memberCount;
     private String travelModeSuggestion;
 }

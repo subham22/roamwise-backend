@@ -55,6 +55,7 @@ public class TripController {
             @AuthenticationPrincipal User currentUser) {
 
         TripResponse tripResponse = tripService.getTripById(tripId, currentUser.getId());
+        requireEditor(tripResponse);
     String prompt =
         itineraryGenerationService.buildReplanPrompt(
             tripResponse, request.getBudgetDelta(), request.getInterest());
@@ -83,6 +84,7 @@ public class TripController {
             @AuthenticationPrincipal User currentUser) {
 
         TripResponse trip = tripService.getTripById(tripId, currentUser.getId());
+        requireEditor(trip);
         List<PlaceResult> places = placesService.searchPlaces(
                 "top attractions, food spots and hidden gems in " + trip.getDestination());
         String prompt = itineraryGenerationService.buildChatEditPrompt(trip, request.message().trim(), places);
@@ -197,4 +199,11 @@ public class TripController {
     }
 
 
+
+    private static void requireEditor(TripResponse trip) {
+        if (!TripRole.valueOf(trip.getMyRole()).atLeast(TripRole.EDITOR)) {
+            throw new org.springframework.web.server.ResponseStatusException(
+                    HttpStatus.FORBIDDEN, "You can view this trip but not edit it");
+        }
+    }
 }
