@@ -43,6 +43,12 @@ jobs:
             cd roamwise-infra && git checkout -q main && git pull -q
             docker compose pull backend
             docker compose up -d
+            # fail the run if the new backend never answers (e.g. it crashed while updating the schema)
+            for i in $(seq 1 36); do
+              curl -sf -o /dev/null "http://$(hostname -I | cut -d' ' -f1):8080/api/guides" && echo "backend healthy" && break
+              [ "$i" = 36 ] && { echo "backend did not come up"; docker compose logs --tail 80 backend; exit 1; }
+              sleep 5
+            done
             docker image prune -f
             # nightly DB backup at 03:00 IST (21:30 UTC); install once, then take one now
             mkdir -p ~/backups
