@@ -24,6 +24,7 @@ import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -50,7 +51,11 @@ public class ItineraryGenerationService {
         job.setUpdatedAt(LocalDateTime.now());
         jobRepository.save(job);
        try {
-           generateItinerary(trip, interests);
+           generateItinerary(trip, interests, message -> {
+               job.setProgressMessage(message);
+               job.setUpdatedAt(LocalDateTime.now());
+               jobRepository.save(job);
+           });
            job.setStatus(JobStatus.DONE);
            job.setResultTripId(trip.getTripId());
        } catch(Exception e) {
@@ -198,10 +203,17 @@ public class ItineraryGenerationService {
     }
 
     public GeneratedItinerary parseWithRetry(String userPrompt, int maxAttempts) {
+        return parseWithRetry(userPrompt, maxAttempts, message -> {});
+    }
+
+    public GeneratedItinerary parseWithRetry(String userPrompt, int maxAttempts, Consumer<String> progress) {
         String currentPrompt = userPrompt;
         Exception lastError = null;
 
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            if (attempt > 1) {
+                progress.accept("Double-checking the plan (attempt " + attempt + " of " + maxAttempts + ")");
+            }
             String rawJson = openAiService.generateItinerary(currentPrompt);
             try {
                 GeneratedItinerary itinerary = objectMapper.readValue(rawJson, GeneratedItinerary.class);
@@ -252,8 +264,17 @@ public class ItineraryGenerationService {
     }
 
     public void generateItinerary(Trip trip, String interests) {
+        generateItinerary(trip, interests, message -> {});
+    }
+
+    public void generateItinerary(Trip trip, String interests, Consumer<String> progress) {
+        String city = trip.getDestination().split(",")[0].trim();
+        progress.accept("Finding the best places in " + city);
         List<PlaceResult> places = placesService.getPlacesForItinerary(trip.getDestination(), interests);
         String placesText = formatPlacesForPrompt(places);
+
+        progress.accept("Checking the weather for your dates");
+        String weatherText = formatWeatherForPrompt(trip);
 
         long numberOfDays = ChronoUnit.DAYS.between(trip.getStartDate(), trip.getEndDate()) + 1;
 
@@ -270,7 +291,7 @@ public class ItineraryGenerationService {
             + interests
             + "\n\n"
             + "Weather forecast for each day:\n"
-            + formatWeatherForPrompt(trip)
+            + weatherText
             + "\n"
             + "If a day's weather is rainy or poor, prefer indoor activities for that day.\n\n"
             + "Include hotels or stay as well depending upon the no of days trip and budget in accommodations, Do not include hotel check-in, check-out, or accommodation details as activities inside \"days\". Put all lodging information only in \"accommodations\".\n\n"
@@ -289,7 +310,9 @@ public class ItineraryGenerationService {
             + "Here are real places you may use:\n"
             + placesText;
 
-        GeneratedItinerary rawJson = parseWithRetry(userPrompt, 3);
+        progress.accept("Planning your days with AI");
+        GeneratedItinerary rawJson = parseWithRetry(userPrompt, 3, progress);
+        progress.accept("Saving your trip");
         parseAndSaveItinerary(rawJson, trip, places);
     }
 

@@ -21,6 +21,9 @@ public class Job {
     @Column(columnDefinition = "TEXT")
     private String errorMessage;
 
+    // human-readable step shown to the user while the job runs
+    private String progressMessage;
+
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }
