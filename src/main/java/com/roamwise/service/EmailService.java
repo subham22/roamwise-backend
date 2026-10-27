@@ -28,13 +28,18 @@ public class EmailService {
     @Value("${app.mail.from}")
     private String from;
 
+    // owner gets a copy of outgoing mail (blank = off); never used for password resets
+    @Value("${app.mail.bcc:}")
+    private String bcc;
+
     @Async
     public void sendShareNotification(String toEmail, String tripDestination, String shareUrl) throws MessagingException {
         send(toEmail,
                 "Someone shared a trip with you: " + tripDestination,
                 "email/trip-shared",
                 Map.of("tripDestination", tripDestination, "shareUrl", shareUrl),
-                "Someone shared a trip to " + tripDestination + " with you.\n\nView it here: " + shareUrl);
+                "Someone shared a trip to " + tripDestination + " with you.\n\nView it here: " + shareUrl,
+                true);
     }
 
     @Async
@@ -46,7 +51,8 @@ public class EmailService {
                         "guidesUrl", "https://roamwise.live/guides"),
                 "Welcome to Roamwise!\n\n"
                         + "Plan your first trip: https://roamwise.live/app/generate\n"
-                        + "Browse ready-made itineraries: https://roamwise.live/guides");
+                        + "Browse ready-made itineraries: https://roamwise.live/guides",
+                true);
     }
 
     @Async
@@ -56,10 +62,11 @@ public class EmailService {
                 "email/password-reset",
                 Map.of("resetLink", resetLink),
                 "Click this link to reset your password: " + resetLink
-                        + "\n\nThis link expires in 1 hour. If you didn't request this, ignore this email.");
+                        + "\n\nThis link expires in 1 hour. If you didn't request this, ignore this email.",
+                false); // a copy of a reset link would let its holder take over the account
     }
 
-    private void send(String to, String subject, String template, Map<String, Object> vars, String plainText) throws MessagingException {
+    private void send(String to, String subject, String template, Map<String, Object> vars, String plainText, boolean bccOwner) throws MessagingException {
 
         Context context = new Context();
         context.setVariables(vars);
@@ -74,7 +81,9 @@ public class EmailService {
         helper.setTo(to);
         helper.setSubject(subject);
         helper.setText(plainText, html);
-        helper.setBcc("sharma.subham123@gmail.com");
+        if (bccOwner && !bcc.isBlank()) {
+            helper.setBcc(bcc);
+        }
         try {
             mailSender.send(msg);
         } catch (MailException e) {

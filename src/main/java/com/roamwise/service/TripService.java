@@ -21,6 +21,7 @@ import tools.jackson.databind.ObjectMapper;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -295,5 +296,71 @@ public class TripService {
         }
         trip.setDays(days);
         return tripRepository.save(trip).getTripId();
+    }
+
+    /** Copies a trip someone shared into the caller's trips, moved to start on startDate. Returns the new trip id. */
+    @Transactional
+    public Integer copySharedTrip(String shareToken, @Nullable LocalDate startDate, Integer userId) {
+        Trip source = tripRepository.findByShareToken(shareToken)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Shared trip not found"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
+        LocalDate start = startDate != null ? startDate : LocalDate.now().plusDays(14);
+        if (start.isBefore(LocalDate.now())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Start date can't be in the past");
+        }
+        // shift every date by the same amount so day gaps and hotel stays line up
+        long shift = source.getStartDate() != null ? ChronoUnit.DAYS.between(source.getStartDate(), start) : 0;
+
+        Trip trip = new Trip();
+        trip.setUser(user);
+        trip.setDestination(source.getDestination());
+        trip.setOrigin(source.getOrigin());
+        trip.setStartDate(start);
+        trip.setEndDate(source.getEndDate() != null ? source.getEndDate().plusDays(shift) : start);
+        trip.setBudget(source.getBudget());
+        trip.setBudgetStayPct(source.getBudgetStayPct());
+        trip.setBudgetFoodPct(source.getBudgetFoodPct());
+        trip.setBudgetActivitiesPct(source.getBudgetActivitiesPct());
+        trip.setBudgetTransportPct(source.getBudgetTransportPct());
+        trip.setTravelModeSuggestion(source.getTravelModeSuggestion());
+
+        List<Day> days = new ArrayList<>();
+        for (Day sourceDay : dayRepository.findByTrip(source)) {
+            Day day = new Day();
+            day.setTrip(trip);
+            day.setDayNumber(sourceDay.getDayNumber());
+            day.setDayDate(sourceDay.getDayDate() != null ? sourceDay.getDayDate().plusDays(shift) : null);
+            day.setActivities(sourceDay.getActivities().stream().map(sa -> {
+                Activity activity = new Activity();
+                activity.setDay(day);
+                activity.setName(sa.getName());
+                activity.setSequence(sa.getSequence());
+                activity.setStartTime(sa.getStartTime());
+                activity.setEndTime(sa.getEndTime());
+                activity.setNotes(sa.getNotes());
+                activity.setLatitude(sa.getLatitude());
+                activity.setLongitude(sa.getLongitude());
+                activity.setPhotoReference(sa.getPhotoReference());
+                activity.setIsHiddenGem(sa.getIsHiddenGem());
+                activity.setReviewSnippet(sa.getReviewSnippet());
+                return activity;
+            }).collect(Collectors.toCollection(ArrayList::new)));
+            days.add(day);
+        }
+        trip.setDays(days);
+        Trip saved = tripRepository.save(trip);
+
+        for (Accommodation sourceStay : accommodationRepository.findByTrip(source)) {
+            Accommodation stay = new Accommodation();
+            stay.setTrip(saved);
+            stay.setHotelName(sourceStay.getHotelName());
+            stay.setPricePerNight(sourceStay.getPricePerNight());
+            stay.setNotes(sourceStay.getNotes());
+            stay.setCheckInDate(sourceStay.getCheckInDate() != null ? sourceStay.getCheckInDate().plusDays(shift) : null);
+            stay.setCheckOutDate(sourceStay.getCheckOutDate() != null ? sourceStay.getCheckOutDate().plusDays(shift) : null);
+            accommodationRepository.save(stay);
+        }
+        return saved.getTripId();
     }
 }
