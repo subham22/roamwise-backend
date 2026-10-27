@@ -76,6 +76,30 @@ public class TripController {
 
     }
 
+    @PostMapping("/{tripId}/chat-edit")
+    public ResponseEntity<ReplanProposalResponse> proposeChatEdit(
+            @PathVariable Integer tripId,
+            @Valid @RequestBody ChatEditRequest request,
+            @AuthenticationPrincipal User currentUser) {
+
+        TripResponse trip = tripService.getTripById(tripId, currentUser.getId());
+        List<PlaceResult> places = placesService.searchPlaces(
+                "top attractions, food spots and hidden gems in " + trip.getDestination());
+        String prompt = itineraryGenerationService.buildChatEditPrompt(trip, request.message().trim(), places);
+        GeneratedItinerary edited = itineraryGenerationService.parseWithRetry(prompt, 2);
+        List<String> diff = itineraryGenerationService.diffItineraries(trip, edited);
+
+        // same proposal flow as replan: the user previews the diff, then confirms via /replan/{id}/confirm
+        ReplanProposal proposal = new ReplanProposal();
+        proposal.setTrip(tripRepository.findById(tripId).orElseThrow());
+        proposal.setProposedJson(objectMapper.writeValueAsString(edited));
+        proposal.setDiffSummary(String.join("\n", diff));
+        proposal.setCreatedAt(LocalDateTime.now());
+        proposal.setPlacesJson(objectMapper.writeValueAsString(places));
+        ReplanProposal saved = replanProposalRepository.save(proposal);
+        return ResponseEntity.ok(new ReplanProposalResponse(saved.getId(), diff));
+    }
+
     @PostMapping("/replan/{proposalId}/confirm")
     public ResponseEntity<Void> confirmReplan(@PathVariable Integer proposalId, @AuthenticationPrincipal User currentUser) throws JsonProcessingException {
         tripService.confirmReplan(proposalId, currentUser.getId());
