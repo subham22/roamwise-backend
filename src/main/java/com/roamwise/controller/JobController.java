@@ -26,6 +26,7 @@ public class JobController {
         response.setResultTripId(job.getResultTripId());
         response.setStatus(String.valueOf(job.getStatus()));
         response.setErrorMessage(job.getErrorMessage());
+        response.setProgress(job.getProgressMessage());
         return ResponseEntity.ok().body(response);
 
     }

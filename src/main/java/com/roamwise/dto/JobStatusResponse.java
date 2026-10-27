@@ -11,4 +11,5 @@ public class JobStatusResponse {
     private String status;
     private Integer resultTripId;
     private String errorMessage;
+    private String progress;
 }
