@@ -40,7 +40,8 @@ public class SecurityConfig {
                         "/api/trips/shared/**",
                         "/api/shared/trips/**",
                         "/api/guides/**",
-                        "/sitemap.xml"
+                        "/sitemap.xml",
+                        "/error" // Spring's error page; without this every unhandled error became a 401
                 ).permitAll().requestMatchers("/api/admin/**").hasRole("ADMIN").anyRequest().authenticated())
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
