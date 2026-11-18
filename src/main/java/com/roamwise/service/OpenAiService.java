@@ -72,7 +72,29 @@ public class OpenAiService {
         Mention the destination and number of days naturally, for example ‘this 3-day Goa itinerary’.” That way the description repeats the keyword without stuffing it.
         """;
 
+    private static final String GUIDE_INFO_SYSTEM_PROMPT =
+      """
+        You write the practical-information section of an Indian travel guide. Respond with ONLY valid JSON matching:
+
+        {
+          "overview": "string, 90-130 words: what the place is like and who this itinerary suits, naming places from the itinerary",
+          "bestTimeToVisit": "string, 50-80 words: best months, weather by season, festivals worth timing a trip around",
+          "howToReach": "string, 60-90 words: nearest airport and railway station by name, road access from nearby big cities",
+          "gettingAround": "string, 40-70 words: local transport options and rough local fares",
+          "budget": "string, 50-80 words: approximate per-person daily cost in INR (₹) for budget, mid-range and comfortable travellers",
+          "tips": ["4 to 6 specific, practical tips, one sentence each"],
+          "faqs": [ { "question": "string", "answer": "string, 30-60 words" } ]
+        }
+
+        Write 5 faqs that real travellers search for, e.g. "Is N days enough for X?", "What is the best time to visit X?", "How much does a trip to X cost?", "How do I reach X?", plus one specific to the destination.
+        Write in plain, friendly English for Indian travellers. Use only facts you are confident are accurate; describe prices as approximate. Do not invent hotel or restaurant names.
+        """;
+
     private final RestClient restClient = RestClient.create();
+
+    public String generateGuideInfo(String prompt) {
+        return callOpenAi(GUIDE_INFO_SYSTEM_PROMPT, prompt);
+    }
 
     public String generateItinerary(String prompt) {
         return callOpenAi(TRIP_SYSTEM_PROMPT, prompt);

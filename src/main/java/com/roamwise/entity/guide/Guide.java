@@ -28,6 +28,10 @@ public class Guide {
   @Column(columnDefinition = "TEXT")
   private String heroImageUrl;
 
+  /** JSON of GuideTravelInfo: overview, best time, how to reach, budget, tips, FAQs */
+  @Column(columnDefinition = "TEXT")
+  private String travelInfo;
+
   @Enumerated(EnumType.STRING)
   private Status status;
 
