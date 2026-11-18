@@ -7,7 +7,8 @@ import java.util.List;
 
 public record GuideDetailResponse(String slug, String title, String destination,
                                   String metaDescription, String heroImageUrl,
-                                  List<GuideDayResponse> days, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
+                                  List<GuideDayResponse> days, OffsetDateTime createdAt, OffsetDateTime updatedAt,
+                                  GuideTravelInfo travelInfo, List<GuideSummaryResponse> related) {
 
     public record GuideDayResponse(Integer dayNo, String dayLabel, List<GuideActivityResponse> activities) {}
 

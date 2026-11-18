@@ -1,6 +1,10 @@
 package com.roamwise.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.roamwise.dto.guide.GuideDetailResponse;
+import com.roamwise.dto.guide.GuideLocation;
+import com.roamwise.dto.guide.GuideTravelInfo;
 import com.roamwise.dto.guide.GuideSummaryResponse;
 import com.roamwise.entity.guide.Guide;
 import com.roamwise.entity.guide.GuideDay;
@@ -21,6 +25,7 @@ import java.util.List;
 public class GuideController {
 
     private final GuideRepository guideRepository;
+    private final ObjectMapper objectMapper;
 
     @GetMapping
     public List<GuideSummaryResponse> list() {
@@ -50,6 +55,18 @@ public class GuideController {
                 .toList();
 
         return new GuideDetailResponse(guide.getSlug(), guide.getTitle(), guide.getDestination(),
-                guide.getMetaDescription(), guide.getHeroImageUrl(), days, guide.getCreatedAt().atOffset(ZoneOffset.UTC), guide.getUpdatedAt().atOffset(ZoneOffset.UTC));
+                guide.getMetaDescription(), guide.getHeroImageUrl(), days, guide.getCreatedAt().atOffset(ZoneOffset.UTC), guide.getUpdatedAt().atOffset(ZoneOffset.UTC),
+                travelInfo(guide), GuideLocation.nearest(guide.getSlug(), guideRepository.findPublishedLocations(), 6));
+    }
+
+    private GuideTravelInfo travelInfo(Guide guide) {
+        if (guide.getTravelInfo() == null) {
+            return null;
+        }
+        try {
+            return objectMapper.readValue(guide.getTravelInfo(), GuideTravelInfo.class);
+        } catch (JsonProcessingException e) {
+            return null; // bad stored JSON shouldn't break the page
+        }
     }
 }

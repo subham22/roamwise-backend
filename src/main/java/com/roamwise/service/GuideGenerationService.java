@@ -10,6 +10,7 @@ import com.roamwise.dto.accomodation.GeneratedAccommodation;
 import com.roamwise.dto.ai_response.GeneratedActivity;
 import com.roamwise.dto.ai_response.GeneratedDay;
 import com.roamwise.dto.ai_response.GeneratedItinerary;
+import com.roamwise.dto.guide.GuideTravelInfo;
 import com.roamwise.entity.guide.Guide;
 import com.roamwise.entity.guide.GuideActivity;
 import com.roamwise.entity.guide.GuideDay;
@@ -61,9 +62,38 @@ public class GuideGenerationService {
                                 .filter(ref -> ref != null)
                                         .findFirst()
                                                 .ifPresent(newGuide::setHeroImageUrl);
+        try {
+            newGuide.setTravelInfo(generateTravelInfo(newGuide));
+        } catch (RuntimeException e) {
+            // the startup backfill retries guides without travel info
+        }
 
        return guideRepository.save(newGuide).getId();
 
+    }
+
+    /** Asks the AI for the practical-info section (best time, how to reach, budget, FAQs) as JSON. */
+    public String generateTravelInfo(Guide guide) {
+        String places = guide.getDays().stream()
+                .flatMap(d -> d.getActivities().stream())
+                .map(GuideActivity::getName)
+                .collect(java.util.stream.Collectors.joining(", "));
+        String prompt = "Destination: %s. This is a %d-day itinerary visiting: %s."
+                .formatted(guide.getDestination(), guide.getDays().size(), places);
+        for (int attempt = 1; ; attempt++) {
+            try {
+                String json = openAiService.generateGuideInfo(prompt);
+                GuideTravelInfo info = objectMapper.readValue(json, GuideTravelInfo.class);
+                if (info.overview() == null || info.faqs() == null || info.faqs().isEmpty()) {
+                    throw new IllegalStateException("travel info incomplete");
+                }
+                return objectMapper.writeValueAsString(info); // normalised: drops unknown fields
+            } catch (Exception e) {
+                if (attempt == 3) {
+                    throw new RuntimeException("Travel info generation failed for " + guide.getSlug(), e);
+                }
+            }
+        }
     }
 
     private List<GuideDay> convertToGeneratedDay(GeneratedGuide guide, Guide newGuide, List<PlaceResult> places) {
