@@ -1,0 +1,23 @@
+name: Stats
+# Prints aggregate counts only: this repo is public, so the log must never contain emails or other personal data.
+on:
+  workflow_dispatch:
+
+jobs:
+  stats:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd roamwise-infra
+            docker compose exec -T postgres psql -U postgres -d roamwise -c "
+              select
+                (select count(*) from users)                                  as registered_users,
+                (select count(distinct user_id) from trip)                    as users_with_a_trip,
+                (select count(*) from trip)                                   as trips,
+                (select count(*) from trip where share_token is not null)     as shared_trips,
+                (select count(*) from trip_member)                            as trip_invites;"
