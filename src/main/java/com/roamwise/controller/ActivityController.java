@@ -11,12 +11,14 @@ import com.roamwise.service.PlacesService;
 import com.roamwise.service.TripService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.CacheControl;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
@@ -41,6 +43,7 @@ public class ActivityController {
         byte[] imageBytes = placesService.getPhoto(photoReference);
         return ResponseEntity.ok()
                 .contentType(MediaType.IMAGE_JPEG)
+                .cacheControl(CacheControl.maxAge(Duration.ofDays(7)).cachePublic()) // each miss costs a Google Places call
                 .body(imageBytes);
     }
 

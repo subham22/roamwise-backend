@@ -11,10 +11,15 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 @RequiredArgsConstructor
@@ -80,12 +85,30 @@ public class PlacesService {
         return searchPlaces(query);
     }
 
+    /** Google photo names look like places/{placeId}/photos/{photoId}; anything else is rejected before it reaches Google with our key. */
+    static final Pattern PHOTO_NAME = Pattern.compile("places/([A-Za-z0-9_-]+)/photos/[A-Za-z0-9_-]+");
+
     @Cacheable(value = "photos", key = "#photoReference")
     public byte[] getPhoto(String photoReference) {
-        String url = "https://places.googleapis.com/v1/" + photoReference + "/media?maxWidthPx=400&key=" + apiKey;
+        Matcher m = PHOTO_NAME.matcher(photoReference);
+        if (!m.matches()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid photo reference");
+        }
+        try {
+            return downloadPhoto(photoReference);
+        } catch (HttpClientErrorException.BadRequest | HttpClientErrorException.NotFound expired) {
+            // photo names expire after a while; fetch a current one for the same place
+            String fresh = currentPhotoName(m.group(1));
+            if (fresh == null) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Photo not available");
+            }
+            return downloadPhoto(fresh);
+        }
+    }
 
+    private byte[] downloadPhoto(String photoName) {
         PhotoMediaResponse mediaResponse = restClient.get()
-                .uri(url)
+                .uri("https://places.googleapis.com/v1/" + photoName + "/media?maxWidthPx=400&key=" + apiKey)
                 .retrieve()
                 .body(PhotoMediaResponse.class);
 
@@ -93,6 +116,16 @@ public class PlacesService {
                 .uri(mediaResponse.photoUri())
                 .retrieve()
                 .body(byte[].class);
+    }
+
+    private String currentPhotoName(String placeId) {
+        Place place = restClient.get()
+                .uri("https://places.googleapis.com/v1/places/" + placeId)
+                .header("X-Goog-Api-Key", apiKey)
+                .header("X-Goog-FieldMask", "photos")
+                .retrieve()
+                .body(Place.class);
+        return (place != null && place.photos() != null && !place.photos().isEmpty()) ? place.photos().get(0).name() : null;
     }
 
 }
